@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SignalOrNoise.Core/SignalOrNoise.Core.csproj" />
+    <Project Path="src/SignalOrNoise.Ingestor/SignalOrNoise.Ingestor.csproj" />
+    <Project Path="src/SignalOrNoise.Api/SignalOrNoise.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SignalOrNoise.Tests/SignalOrNoise.Tests.csproj" />
+  </Folder>
+</Solution>
