@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SignalOrNoise.Core;
 
@@ -8,6 +9,17 @@ public class NewsDbContext(DbContextOptions<NewsDbContext> options) : DbContext(
     public DbSet<PollRun> PollRuns => Set<PollRun>();
     public DbSet<Story> Stories => Set<Story>();
     public DbSet<StoryScore> StoryScores => Set<StoryScore>();
+
+    // SQL Server's datetime2 has no time zone, so EF reads values back as DateTimeKind.Unspecified.
+    // Every timestamp here is stored in UTC, so mark it as UTC on read (JSON then ends in "Z").
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+    }
+
+    private class UtcDateTimeConverter() : ValueConverter<DateTime, DateTime>(
+        toDb => toDb,
+        fromDb => DateTime.SpecifyKind(fromDb, DateTimeKind.Utc));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

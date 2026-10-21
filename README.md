@@ -56,12 +56,25 @@ dotnet tool restore
 dotnet ef database update --project src/SignalOrNoise.Core
 
 # 4. Run
-dotnet run --project src/SignalOrNoise.Ingestor   # polls all feeds every 15 minutes until Ctrl+C
-dotnet run --project src/SignalOrNoise.Api        # then: curl http://localhost:<port>/health
+dotnet run --project src/SignalOrNoise.Ingestor   # polls feeds every 15 min; clusters and scores if ANTHROPIC_API_KEY is set
+dotnet run --project src/SignalOrNoise.Api        # serves http://localhost:5199
+
+# 5. Web page (separate terminal; forwards /digest and /stories to the API)
+cd web
+npm install
+npm run dev                                       # open http://localhost:5173
 
 # Tests
 dotnet test
 ```
+
+## API
+
+| Endpoint | Returns |
+|---|---|
+| `GET /digest?date=YYYY-MM-DD` | Top 30 events for that US/Eastern day (default: today), ranked by materiality. Stories with the same primary ticker and event type are merged into one row. |
+| `GET /stories/{id}` | One story's score, rationale, and every member headline, marked by whether the scorer saw it (published before the cutoff). |
+| `GET /health` | `"ok"` if the database is reachable. |
 
 ## Collect data continuously
 

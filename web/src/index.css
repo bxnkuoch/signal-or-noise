@@ -1,0 +1,183 @@
+:root {
+  --bg: #ffffff;
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --border: #e3e3e8;
+  --link: #0a58ca;
+  --low: #e9e9ee;
+  --mid: #ffe1a8;
+  --high: #ffb3ad;
+  --up: #1a7f37;
+  --down: #c62828;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161618;
+    --text: #ececf0;
+    --muted: #9a9aa3;
+    --border: #2e2e33;
+    --link: #7fb0ff;
+    --low: #2e2e33;
+    --mid: #5c4410;
+    --high: #6b1f1a;
+    --up: #4cc26b;
+    --down: #ff6b6b;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--down);
+}
+
+main > p {
+  margin-top: 16px;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+.stories {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+
+.story {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.score {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.score.low {
+  background: var(--low);
+}
+
+.score.mid {
+  background: var(--mid);
+}
+
+.score.high {
+  background: var(--high);
+}
+
+.body {
+  min-width: 0;
+  flex: 1;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.meta strong {
+  color: var(--text);
+}
+
+.direction.d1 {
+  color: var(--up);
+}
+
+.direction.d-1 {
+  color: var(--down);
+}
+
+.summary {
+  margin: 4px 0 6px;
+  line-height: 1.4;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.85rem;
+}
+
+a {
+  color: var(--link);
+  overflow-wrap: anywhere;
+}
+
+.links button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.details {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--border);
+  font-size: 0.9rem;
+  display: grid;
+  gap: 8px;
+}
+
+.details ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.details li.unseen a {
+  color: var(--muted);
+}

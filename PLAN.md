@@ -23,7 +23,8 @@ Realistic size: ~25–30 hours of build time, plus 1–2 weeks of unattended dat
 5. **Web**: one page listing the digest: score, ticker, summary, source links, date picker.
 
 ## Eval (the part that makes this resume-worthy)
-- For each scored story with a single primary ticker, compute the **abnormal return** = stock return minus SPY return, over **two windows**, reported separately:
+- **Unit of analysis: one primary ticker × one trading session.** Title-word clustering splits rewordings of one event into several stories (e.g. four Tesla–SpaceX merger stories on Oct 20). Those share a single stock return, so counting them separately would inflate n and narrow the CIs (pseudo-replication). Group all scored stories for the same ticker and session, and use the highest materiality. Report n at this level.
+- For each ticker-session, compute the **abnormal return** = stock return minus SPY return, over **two windows**, reported separately:
   - **Event session**: from the last close before `ScoredAsOfUtc` to the next close after it (captures the same-day reaction for headlines during market hours).
   - **Next session**: the full trading session after the event session (tests whether the score predicts moves the market hasn't priced in yet).
   - After-hours/weekend headlines map to the next open.
