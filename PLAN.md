@@ -6,7 +6,7 @@ Realistic size: ~25–30 hours of build time, plus 1–2 weeks of unattended dat
 - .NET 10 (current LTS) solution, C#: a Worker ingestion service + ASP.NET Core Minimal API
 - SQL Server 2022 in Docker, EF Core with migrations. On Apple Silicon the image runs under Rosetta (`platform: linux/amd64`); confirm `docker compose up` works before writing EF code
 - LLM: Claude API via the official Anthropic C# SDK (fall back to HttpClient if needed). Use a cheap model (Haiku) by default, model name in config, API key from env var / user-secrets, never committed
-- Python 3 only for the eval (pandas, scipy, yfinance), in /eval
+- Python 3 only for the eval (pandas, scipy, yfinance, matplotlib), in /eval. It reads TSVs that `eval/export.sh` dumps with the `sqlcmd` inside the SQL Server container, so Python needs no database driver
 - React + Vite + TypeScript thin frontend in /web (one page, no UI library needed)
 - docker-compose for SQL Server; README with exact run commands
 
@@ -33,7 +33,7 @@ Realistic size: ~25–30 hours of build time, plus 1–2 weeks of unattended dat
 - Report, for each window:
   - Spearman correlation between materiality and |normalized abnormal return|, with a bootstrap 95% CI and n.
   - Mean |normalized abnormal return| for top vs bottom materiality quintile.
-  - **Baselines the LLM has to beat**: (a) number of headlines in the cluster; (b) an earnings-only flag (is this story about earnings, yes/no). If the LLM doesn't beat (b), say so.
+  - **Baselines the LLM has to beat**: (a) number of headlines for that ticker-session that the scorer saw (changed from "per cluster" on Oct 21: clustering came out almost 1:1, so a per-cluster count was nearly constant); (b) an earnings-only flag: any visible headline matches a fixed earnings keyword regex. If the LLM doesn't beat (b), say so. "Beats" means the bootstrap CI of ρ(LLM) − ρ(baseline) excludes 0 *and* the LLM's own ρ CI excludes 0.
   - **Direction hit rate**: for stories with direction ≠ 0, the fraction where sign(direction) matches sign(abnormal return), with n and a CI.
 - Also report pipeline stats: headlines in → stories out per day, cost per day, p50 latency per LLM call, and collection gaps.
 - Power: a few hundred stories can only detect a correlation of roughly 0.1–0.15 or larger. A null result is likely and fine; report it plainly.

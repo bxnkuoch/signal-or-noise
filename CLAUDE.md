@@ -73,7 +73,7 @@ Portfolio project for a SIG technology co-op application. [PLAN.md](PLAN.md) is 
 ## Working agreement
 - Work one milestone at a time (M0–M5). Stop at the end of each so I can review and understand the code. Briefly explain key design choices; I need to be able to defend them in interviews.
 - Commit only at the end of a milestone, after I've reviewed it.
-- Ask before adding any NuGet, npm, or pip package. Already approved: EF Core (SqlServer, Design, dotnet-ef), Microsoft.Extensions.Hosting, xUnit, Polly, the official Anthropic C# SDK; pandas, scipy, yfinance (eval); React, Vite, TypeScript (web).
+- Ask before adding any NuGet, npm, or pip package. Already approved: EF Core (SqlServer, Design, dotnet-ef), Microsoft.Extensions.Hosting, xUnit, Polly, the official Anthropic C# SDK; pandas, scipy, yfinance, matplotlib (eval); React, Vite, TypeScript (web).
 - Interfaces only where they help testing: LLM client, feed reader, clock. No other abstractions.
 
 ## Layout

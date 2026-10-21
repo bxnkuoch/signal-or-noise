@@ -2,7 +2,7 @@
 
 Collapses a day of financial headlines into ~30 ranked stories, each with an LLM materiality score and a one-line summary, then measures whether those scores actually predict price moves.
 
-> Status: M0 (scaffold). See [PLAN.md](PLAN.md) for the full spec and milestones.
+> Status: M4 (eval). Collecting data; eval numbers are preliminary until 1–2 weeks of headlines are in. See [PLAN.md](PLAN.md) for the full spec and milestones.
 
 ## Architecture
 
@@ -85,6 +85,19 @@ caffeinate -i dotnet run --project src/SignalOrNoise.Ingestor
 ```
 
 Every poll of every feed is recorded in the `PollRuns` table, including failures, so gaps in collection show up in the data.
+
+## Run the eval
+
+Needs Python 3 and the running SQL Server container. Writes `eval/results.md` and `eval/scatter.png`.
+
+```bash
+python3 -m venv eval/.venv
+eval/.venv/bin/pip install -r eval/requirements.txt
+
+eval/export.sh                                    # dump scores, headlines, poll runs to eval/data/*.tsv
+eval/.venv/bin/python eval/eval.py                # downloads daily closes (yfinance) and writes the report
+eval/.venv/bin/python -m unittest discover eval   # tests for session mapping and no-lookahead rules
+```
 
 ## Results
 
