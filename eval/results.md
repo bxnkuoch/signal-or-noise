@@ -1,12 +1,12 @@
 # Signal or Noise: eval results
 
-Generated 2026-10-21 18:29 UTC by `eval/eval.py` from `eval/data/` (exported with `eval/export.sh`). Every number below comes from that run; nothing is edited by hand.
+Generated 2026-10-21 20:07 UTC by `eval/eval.py` from `eval/data/` (exported with `eval/export.sh`). Every number below comes from that run; nothing is edited by hand.
 
 ## Data
 
-- **Source: live RSS only** (Yahoo per-ticker + CNBC), polled from 2026-10-20 23:21 UTC to 2026-10-21 18:19 UTC. No historical dataset is used, so there are no historical-dataset results to report separately.
+- **Source: live RSS only** (Yahoo per-ticker + CNBC), polled from 2026-10-20 23:21 UTC to 2026-10-21 19:54 UTC. No historical dataset is used, so there are no historical-dataset results to report separately.
 - Scored by `claude-haiku-5-5` (prompt `v1`). Live headlines are only a clean test if they were published after the model's training cutoff; otherwise the model may already know what happened.
-- 1276 scored stories, 651 with a primary ticker, collapsed to 98 ticker-sessions whose event session has closed; 98 of those have the 20-session volatility history needed to normalize.
+- 1346 scored stories, 687 with a primary ticker, collapsed to 98 ticker-sessions whose event session has closed; 98 of those have the 20-session volatility history needed to normalize.
 - Prices: adjusted daily closes from yfinance, through 2026-10-20.
 
 ## Method
@@ -67,7 +67,7 @@ Materiality CI includes 0: no evidence that materiality predicts move size.
 
 ## Pipeline
 
-- 2969 feed polls, 0 failed. LLM cost 0.3331 USD in total; p50 latency per (non-cached) LLM call 1796 ms.
+- 3224 feed polls, 1 failed. LLM cost 0.3516 USD in total; p50 latency per (non-cached) LLM call 1800 ms.
 - No fully covered day yet, so no per-day averages.
 
 | ET date | Coverage | Headlines | Stories | LLM cost (USD) |
@@ -79,7 +79,7 @@ Materiality CI includes 0: no evidence that materiality predicts move size.
 | 2026-10-18 | partial | 8 | 8 | 0.0000 |
 | 2026-10-19 | partial | 179 | 174 | 0.0000 |
 | 2026-10-20 | partial | 551 | 505 | 0.0582 |
-| 2026-10-21 | partial | 665 | 555 | 0.2750 |
+| 2026-10-21 | partial | 736 | 612 | 0.2934 |
 
 Partial days only contain what was still in the feeds at the first poll, or what was collected before the last poll. Cost is by the day the score was made, so the first day includes the backfill.
 
