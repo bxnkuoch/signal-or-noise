@@ -1,22 +1,34 @@
-using Microsoft.EntityFrameworkCore;
-using SignalOrNoise.Core;
+using Microsoft.Extensions.Options;
 
 namespace SignalOrNoise.Ingestor;
 
-// M0: proves the service can reach SQL Server, then exits. M1 replaces this with the RSS polling loop.
 public class IngestWorker(
     IServiceScopeFactory scopeFactory,
-    IHostApplicationLifetime lifetime,
+    IOptions<IngestOptions> options,
     ILogger<IngestWorker> logger) : BackgroundService
 {
+    // Pause between requests so we don't hammer the feed hosts.
+    private static readonly TimeSpan RequestSpacing = TimeSpan.FromSeconds(1);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<NewsDbContext>();
+        var feeds = options.Value.BuildFeeds();
+        var interval = TimeSpan.FromMinutes(options.Value.PollIntervalMinutes);
+        logger.LogInformation("Polling {FeedCount} feeds every {Interval}", feeds.Count, interval);
 
-        var count = await db.Headlines.CountAsync(stoppingToken);
-        logger.LogInformation("Connected to SQL Server. {HeadlineCount} headlines stored", count);
-
-        lifetime.StopApplication();
+        using var timer = new PeriodicTimer(interval);
+        do
+        {
+            var newHeadlines = 0;
+            foreach (var feed in feeds)
+            {
+                // A fresh scope (and DbContext) per feed keeps each poll's change tracking small and isolated.
+                using var scope = scopeFactory.CreateScope();
+                newHeadlines += await scope.ServiceProvider.GetRequiredService<IngestService>().PollAsync(feed, stoppingToken);
+                await Task.Delay(RequestSpacing, stoppingToken);
+            }
+            logger.LogInformation("Poll cycle finished: {NewHeadlines} new headlines from {FeedCount} feeds",
+                newHeadlines, feeds.Count);
+        } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 }

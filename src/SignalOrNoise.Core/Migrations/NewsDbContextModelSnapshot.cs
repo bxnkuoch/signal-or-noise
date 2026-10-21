@@ -46,8 +46,8 @@ namespace SignalOrNoise.Core.Migrations
 
                     b.Property<string>("Tickers")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -81,6 +81,38 @@ namespace SignalOrNoise.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("Headlines");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.PollRun", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Feed")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ItemsFetched")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NewHeadlines")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartedUtc");
+
+                    b.ToTable("PollRuns");
                 });
 #pragma warning restore 612, 618
         }
