@@ -21,4 +21,8 @@ public class Headline
 
     // Comma-separated, e.g. "AAPL,MSFT". Simple to store; a join table can come later if queries need it.
     public string Tickers { get; set; } = "";
+
+    // Null until clustering assigns the headline to a story.
+    public long? StoryId { get; set; }
+    public Story? Story { get; set; }
 }
