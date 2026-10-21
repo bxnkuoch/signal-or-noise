@@ -6,6 +6,8 @@ public class NewsDbContext(DbContextOptions<NewsDbContext> options) : DbContext(
 {
     public DbSet<Headline> Headlines => Set<Headline>();
     public DbSet<PollRun> PollRuns => Set<PollRun>();
+    public DbSet<Story> Stories => Set<Story>();
+    public DbSet<StoryScore> StoryScores => Set<StoryScore>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,5 +26,21 @@ public class NewsDbContext(DbContextOptions<NewsDbContext> options) : DbContext(
         var pollRun = modelBuilder.Entity<PollRun>();
         pollRun.Property(p => p.Feed).HasMaxLength(100);
         pollRun.HasIndex(p => p.StartedUtc);
+
+        var story = modelBuilder.Entity<Story>();
+        story.HasMany(s => s.Headlines).WithOne(h => h.Story).HasForeignKey(h => h.StoryId).OnDelete(DeleteBehavior.SetNull);
+        story.HasMany(s => s.Scores).WithOne(sc => sc.Story).HasForeignKey(sc => sc.StoryId);
+        story.HasIndex(s => s.FirstPublishedUtc);
+        story.HasIndex(s => s.ScoredAsOfUtc);
+
+        var score = modelBuilder.Entity<StoryScore>();
+        score.Property(sc => sc.InputHash).HasMaxLength(64).IsFixedLength();
+        score.Property(sc => sc.Model).HasMaxLength(50);
+        score.Property(sc => sc.PromptVersion).HasMaxLength(20);
+        score.Property(sc => sc.EventType).HasMaxLength(30);
+        score.Property(sc => sc.PrimaryTicker).HasMaxLength(10);
+        score.Property(sc => sc.Summary).HasMaxLength(500);
+        score.Property(sc => sc.CostUsd).HasPrecision(12, 8);
+        score.HasIndex(sc => sc.InputHash);
     }
 }

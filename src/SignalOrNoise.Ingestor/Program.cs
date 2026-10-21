@@ -1,4 +1,6 @@
+using Anthropic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SignalOrNoise.Core;
 using SignalOrNoise.Ingestor;
 
@@ -22,4 +24,24 @@ builder.Services.AddSingleton(_ =>
 builder.Services.AddScoped<IngestService>();
 builder.Services.AddHostedService<IngestWorker>();
 
-builder.Build().Run();
+// Clustering and scoring need the Claude API. Without a key, the service still ingests.
+var scoringEnabled = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY"));
+if (scoringEnabled)
+{
+    builder.Services.Configure<ScoringOptions>(builder.Configuration.GetSection("Scoring"));
+    builder.Services.AddSingleton<ILlmClient>(sp =>
+        new AnthropicLlmClient(new AnthropicClient(), sp.GetRequiredService<IOptions<ScoringOptions>>().Value.Model));
+    builder.Services.AddSingleton(sp => new StoryScorer(
+        sp.GetRequiredService<ILlmClient>(),
+        sp.GetRequiredService<IOptions<ScoringOptions>>().Value,
+        sp.GetRequiredService<IOptions<IngestOptions>>().Value.Tickers,
+        sp.GetRequiredService<ILogger<StoryScorer>>()));
+    builder.Services.AddScoped<ScoringService>();
+    builder.Services.AddHostedService<ScoringWorker>();
+}
+
+var host = builder.Build();
+if (!scoringEnabled)
+    host.Services.GetRequiredService<ILogger<Program>>()
+        .LogWarning("ANTHROPIC_API_KEY is not set, so clustering and scoring are off. Ingestion still runs.");
+host.Run();

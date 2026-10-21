@@ -41,6 +41,9 @@ namespace SignalOrNoise.Core.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<long?>("StoryId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
@@ -74,6 +77,8 @@ namespace SignalOrNoise.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PublishedUtc");
+
+                    b.HasIndex("StoryId");
 
                     b.HasIndex("TitleHash");
 
@@ -113,6 +118,145 @@ namespace SignalOrNoise.Core.Migrations
                     b.HasIndex("StartedUtc");
 
                     b.ToTable("PollRuns");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.Story", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("FirstPublishedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ScoredAsOfUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FirstPublishedUtc");
+
+                    b.HasIndex("ScoredAsOfUtc");
+
+                    b.ToTable("Stories");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.StoryScore", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CostUsd")
+                        .HasPrecision(12, 8)
+                        .HasColumnType("decimal(12,8)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<bool>("FromCache")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("HeadlineCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InputHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<int>("InputTokens")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LatencyMs")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Materiality")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("OutputTokens")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PrimaryTicker")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("PromptVersion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Rationale")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ScoredAsOfUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("StoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InputHash");
+
+                    b.HasIndex("StoryId");
+
+                    b.ToTable("StoryScores");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.Headline", b =>
+                {
+                    b.HasOne("SignalOrNoise.Core.Story", "Story")
+                        .WithMany("Headlines")
+                        .HasForeignKey("StoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Story");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.StoryScore", b =>
+                {
+                    b.HasOne("SignalOrNoise.Core.Story", "Story")
+                        .WithMany("Scores")
+                        .HasForeignKey("StoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Story");
+                });
+
+            modelBuilder.Entity("SignalOrNoise.Core.Story", b =>
+                {
+                    b.Navigation("Headlines");
+
+                    b.Navigation("Scores");
                 });
 #pragma warning restore 612, 618
         }
