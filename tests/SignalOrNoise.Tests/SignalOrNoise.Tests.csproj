@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SignalOrNoise.Core\SignalOrNoise.Core.csproj" />
+    <ProjectReference Include="..\..\src\SignalOrNoise.Ingestor\SignalOrNoise.Ingestor.csproj" />
   </ItemGroup>
 
 </Project>

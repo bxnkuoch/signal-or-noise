@@ -11,7 +11,11 @@ Realistic size: ~25–30 hours of build time, plus 1–2 weeks of unattended dat
 - docker-compose for SQL Server; README with exact run commands
 
 ## Pipeline
-1. **Ingest**: poll RSS feeds on a timer (start with Yahoo Finance per-ticker headline RSS for ~50 large-cap tickers, plus a few general market feeds). **Before building around Yahoo's per-ticker RSS, confirm it still returns fresh items**; have a fallback feed ready. Normalize, dedupe on URL + normalized title hash, store `Headline(Id, Source, Url, Title, Summary, PublishedUtc, IngestedUtc, Tickers)`. Polly retries, structured logging, idempotent upserts. Record each poll run (start time, feed, items fetched) so collection gaps (laptop asleep, network down) are visible and can be reported.
+1. **Ingest**: poll RSS feeds on a timer: Yahoo Finance per-ticker headline RSS for 50 large-cap tickers, plus CNBC top news as a general market feed. Feed choices (checked Oct 20, 2026):
+   - Yahoo per-ticker RSS works, but each feed holds only ~13–20 items (about a day), so history builds up only by running continuously.
+   - Yahoo's general `rssindex` feed is dead (returns HTML).
+   - Nasdaq per-ticker RSS blocks non-browser User-Agents. Not used: we send an honest User-Agent and don't impersonate a browser.
+   - Google News RSS has months of history, but its terms allow only rendering in a personal feed reader. Not used. Normalize, dedupe on URL + normalized title hash, store `Headline(Id, Source, Url, Title, Summary, PublishedUtc, IngestedUtc, Tickers)`. Polly retries, structured logging, idempotent upserts. Record each poll run (start time, feed, items fetched) so collection gaps (laptop asleep, network down) are visible and can be reported.
 2. **Cluster**: group headlines about the same event. Start simple: same ticker + 24h window + title token overlap (Jaccard). Add an LLM confirm/split step **only if** the simple grouping is visibly bad on real data. Store `Story` with its member headlines.
 3. **Score**: per story, one LLM call returning strict JSON: `{event_type, materiality 0-10, direction -1/0/1, one_line_summary, rationale}`. Use the API's structured output / tool-use schema so the model is forced into the shape; keep schema validation and a retry as a backstop. Cache by story hash so reruns don't re-bill. Log tokens and cost per call. Prompt and model version stored on every score row.
    - **No lookahead inside a cluster.** A story's score uses only the headlines published within a fixed scoring window after its first headline (start with 30 minutes). Store that cutoff time `ScoredAsOfUtc` on the score row. Later headlines can still join the story for display, but they are never shown to the scorer. The prompt also tells the model to ignore any headline text that reports the stock's price move itself.
@@ -51,6 +55,6 @@ Realistic size: ~25–30 hours of build time, plus 1–2 weeks of unattended dat
 
 ## How to work with me
 - Start with M0 and stop after each milestone so I can review and understand the code before moving on. Explain key design choices briefly.
-- Prefer simple, idiomatic C# over clever abstractions. Interfaces only where they help testing (LLM client, feed reader, clock).
+- Prefer simple, idiomatic C# over clever abstractions. Interfaces only where they help testing (LLM client, feed reader, clock). In M1, parsing, normalization and dedupe are pure functions tested directly, so no feed-reader or clock interface was needed.
 - Ask me before adding any dependency not listed above.
 - At the end, draft one resume bullet that uses only numbers the eval actually produced.
