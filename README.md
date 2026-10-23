@@ -123,28 +123,28 @@ eval/.venv/bin/python -m unittest discover eval   # tests for session mapping an
 
 ## Results
 
-**Preliminary.** These come from the eval run of 2026-10-21 (data polled 2026-10-20 23:21 to 2026-10-21 19:54 UTC). They will be replaced after 1–2 weeks of collection. Full report: [eval/results.md](eval/results.md).
+**Preliminary.** These come from the eval run of 2026-10-23 (data polled 2026-10-20 23:21 to 2026-10-23 04:22 UTC). They will be replaced after 1–2 weeks of collection. Full report: [eval/results.md](eval/results.md).
 
 **Pipeline**
 
 | | |
 |---|---|
-| Feed polls | 3,224 (1 failed) |
-| Headlines stored | 1,528 |
-| Stories scored | 1,346 |
-| LLM cost, total | $0.3516 |
+| Feed polls | 6,845 (9 failed) |
+| Headlines stored | 2,783 |
+| Stories scored | 2,412 |
+| LLM cost, total | $0.6288 |
 | p50 latency per LLM call | 1,800 ms |
 
-No ET day was fully covered by collection yet, so per-day averages (headlines/day, stories/day, cost/day) aren't reported.
+Averaged over the 2 fully covered ET days: 994 headlines/day → 837 stories/day, $0.2847/day in LLM cost.
 
 **Does materiality predict move size?** Spearman ρ between LLM materiality and |abnormal return| / trailing 20-day σ, one observation per ticker × session, with bootstrap 95% CIs:
 
 | Window | n | Materiality (LLM) | Headline count (baseline a) | Earnings keyword (baseline b) |
 |---|---|---|---|---|
-| Event session | 98 | −0.003 [−0.205, 0.195] | −0.265 [−0.471, −0.066] | 0.019 [−0.185, 0.214] |
-| Next session | 49 | 0.019 [−0.314, 0.334] | −0.210 [−0.484, 0.079] | 0.029 [−0.280, 0.334] |
+| Event session | 196 | 0.103 [−0.047, 0.245] | 0.089 [−0.062, 0.238] | 0.217 [0.075, 0.356] |
+| Next session | 148 | 0.026 [−0.142, 0.199] | 0.099 [−0.057, 0.249] | 0.196 [0.028, 0.348] |
 
-So far there is **no evidence that materiality predicts move size**, and it doesn't beat the earnings-keyword baseline. Direction hit rate (stories with a nonzero direction call): 14/36 in the event session and 8/14 in the next session, neither distinguishable from 50%. At this n the intervals are wide: materiality's event-session CI runs from −0.205 to 0.195.
+So far there is **no evidence that materiality predicts move size**: both of its CIs include 0. The earnings-keyword baseline is the only predictor whose CI excludes 0 in both windows, and it has the higher point estimate, though the LLM − keyword difference isn't significant either way (event session Δρ −0.115 [−0.281, 0.043]). Direction hit rate (stories with a nonzero direction call): 43/84 (51.2%) in the event session and 25/56 (44.6%) in the next session, neither distinguishable from 50%.
 
 ![Materiality vs move size](eval/scatter.png)
 
@@ -152,12 +152,12 @@ So far there is **no evidence that materiality predicts move size**, and it does
 
 ## Limitations
 
-- **Small sample.** About one day of collection so far. Even with two weeks (a few hundred ticker-sessions), only correlations of roughly 0.1–0.15 or larger are detectable.
+- **Small sample.** About two days of collection so far. Even with two weeks (a few hundred ticker-sessions), only correlations of roughly 0.1–0.15 or larger are detectable.
 - **Feeds roll over fast.** Each Yahoo feed holds only its newest ~13–20 items, which can be under an hour for NVDA during market hours. Any collection gap (laptop asleep, process stopped) loses headlines, mostly for the busiest tickers. Every gap is logged in `PollRuns` and listed in `eval/results.md`.
 - **Clustering is close to one headline per story.** Title-word overlap rarely groups rewordings of the same event. The eval sidesteps this by collapsing to one ticker × session. The digest merges stories by ticker + event type, so one row can mix unrelated events: the summary comes from the top story, and the links come from all merged stories.
 - **The event-session window starts before the news.** For headlines during market hours, the window runs from the previous close, so it includes moves that may have caused the headline. The next-session window is the clean predictive test.
 - **Daily closes only.** No intraday prices, and every session is assumed to close at 4pm ET (half-days aren't handled).
-- **Many stories have no primary ticker** (macro and general market news): only 687 of 1,346 scored stories have one. The rest are excluded from the eval.
+- **Many stories have no primary ticker** (macro and general market news): only 1,201 of 2,412 scored stories have one. The rest are excluded from the eval.
 - **Materiality bunches at 1–3,** so the top and bottom quintiles break ties by ticker, then session.
 - **Baselines are deliberately simple.** The earnings baseline is a fixed keyword regex, not a classifier.
 - **One model and one prompt version** (`claude-haiku-5-5`, prompt `v1`). The prompt was never tuned against returns, which avoids overfitting to the eval but also leaves performance on the table.
