@@ -174,14 +174,16 @@ def pipeline_stats(scores, headlines, polls):
         "stories": story_start.groupby(et(story_start)).size(),
         "cost": scores.groupby(et(scores.CreatedUtc)).CostUsd.sum(),
     }).fillna(0).sort_index()
-    # A day counts as fully covered only if polling was running across the whole ET day. Earlier days
-    # only have whatever was still in the feeds at the first poll.
-    start = lambda d: pd.Timestamp(d).tz_localize(ET)
-    days["coverage"] = ["full" if first_poll <= start(d) and last_poll >= start(d) + pd.Timedelta(days=1)
-                        else "partial" for d in days.index]
     batches = polls.StartedUtc.sort_values().drop_duplicates()
     gaps = batches.diff()
     gaps = [(batches.iloc[i - 1], batches.iloc[i], gaps.iloc[i]) for i in np.flatnonzero(gaps > POLL_GAP)]
+    # A day counts as fully covered only if polling was running across the whole ET day, with no
+    # collection gap inside it. Earlier days only have whatever was still in the feeds at the first poll.
+    start = lambda d: pd.Timestamp(d).tz_localize(ET)
+    end = lambda d: start(d) + pd.Timedelta(days=1)
+    days["coverage"] = ["full" if first_poll <= start(d) and last_poll >= end(d)
+                        and not any(a < end(d) and b > start(d) for a, b, _ in gaps)
+                        else "partial" for d in days.index]
     live = scores[scores.FromCache == 0]
     return {"days": days, "gaps": gaps, "first_poll": first_poll, "last_poll": last_poll,
             "p50_latency": live.LatencyMs.median(), "total_cost": scores.CostUsd.sum(),
