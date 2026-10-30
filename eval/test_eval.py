@@ -98,5 +98,18 @@ class EarningsFlagTests(unittest.TestCase):
         self.assertIsNotNone(ev.EARNINGS.search("Q2 results due Thursday"))
 
 
+class PipelineStatsTests(unittest.TestCase):
+    def test_day_with_a_collection_gap_is_partial(self):
+        # Polls every 15 min from Oct 20 00:00 ET to Oct 23 00:00 ET, except a 2 h gap on Oct 21.
+        polls = pd.date_range(utc("2026-10-20 04:00"), utc("2026-10-23 04:00"), freq="15min")
+        polls = polls[(polls < utc("2026-10-21 16:00")) | (polls > utc("2026-10-21 18:00"))]
+        polls = pd.DataFrame({"StartedUtc": polls, "Failed": 0})
+        published = [utc("2026-10-20 15:00"), utc("2026-10-21 15:00"), utc("2026-10-22 15:00")]
+        headlines = pd.DataFrame({"StoryId": [1, 2, 3], "PublishedUtc": published})
+        scores = pd.DataFrame({"CreatedUtc": published, "CostUsd": 0.0, "FromCache": 0, "LatencyMs": 1})
+        days = ev.pipeline_stats(scores, headlines, polls)["days"]
+        self.assertEqual(list(days.coverage), ["full", "partial", "full"])
+
+
 if __name__ == "__main__":
     unittest.main()
